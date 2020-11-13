@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>函数防抖与节流</title>
+</head>
+<body>
+  <div>
+    <input id="debounce" type="text" />
+  </div>
+</body>
+</html>
+<script>
+/*
+@author: tang
+@title: 函数防抖与节流
+@date: 2020/11/13
+*/
+function debounce(func, delay) {
+  let timer;
+  return function () {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    let context = this, args = arguments
+    timer = setTimeout(() => {
+      // setTimeout会改变func中的this指向，所以需要绑定一下
+      func.call(context, ...args)
+    }, delay)
+  }
+}
+// 时间戳方案
+function throttle(fn, threshhold = 160) {
+  var timeout
+  var start = new Date;
+  return function () {
+
+    var context = this, args = arguments, curr = new Date() - 0
+
+    clearTimeout(timeout)//总是干掉事件回调
+    if (curr - start >= threshhold) {
+      console.log("now", curr, curr - start)//注意这里相减的结果，都差不多是160左右
+      fn.apply(context, args) //只执行一部分方法，这些方法是在某个时间段内执行一次
+      start = curr
+    } else {
+      //让方法在脱离事件后也能执行一次
+      timeout = setTimeout(function(){
+        fn.apply(context, args)
+      }, threshhold);
+    }
+  }
+}
+// 定时器方案1，缺点：不能在事件响应时立刻触发
+function throttle2 (func, threshhold = 160) {
+  let timer = null;
+  return function() {
+    let context = this;
+    let args = arguments;
+    if (!timer) {
+      timer = setTimeout(function () {
+        func.apply(context, args)
+        timer = null
+      }, threshhold);
+    }
+  }
+}
+// 定时器方案2， 事件响应时立刻触发
+function throttle3 (func, threshhold = 160) {
+  let flag = false;
+  return function() {
+    let context = this;
+    let args = arguments;
+    if (flag) {
+      return;
+    }
+    flag = true;
+    func.apply(context, args);
+    setTimeout(() => {
+      flag = false;
+    }, threshhold);
+  }
+}
+
+let validate = debounce(function (e) {
+  console.log("change", e.target.value, new Date-0)
+}, 1000);
+let mousemove = throttle(function (e) {
+  console.log(e.pageX, e.pageY)
+}, 2000);
+
+// 绑定监听
+document.querySelector("#debounce").addEventListener('input', validate)
+window.addEventListener('mousemove', mousemove);
+</script>
+
