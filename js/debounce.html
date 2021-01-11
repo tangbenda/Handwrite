@@ -54,11 +54,10 @@ function throttle(fn, threshhold = 160) {
 function throttle2 (func, threshhold = 160) {
   let timer = null;
   return function() {
-    let context = this;
     let args = arguments;
     if (!timer) {
-      timer = setTimeout(function () {
-        func.apply(context, args)
+      timer = setTimeout(() => {
+        func.apply(this, args)
         timer = null
       }, threshhold);
     }
@@ -67,14 +66,12 @@ function throttle2 (func, threshhold = 160) {
 // 定时器方案2， 事件响应时立刻触发
 function throttle3 (func, threshhold = 160) {
   let flag = false;
-  return function() {
-    let context = this;
-    let args = arguments;
+  return function () {
     if (flag) {
       return;
     }
     flag = true;
-    func.apply(context, args);
+    func.apply(this, arguments);
     setTimeout(() => {
       flag = false;
     }, threshhold);
